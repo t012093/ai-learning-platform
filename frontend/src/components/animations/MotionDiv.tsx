@@ -1,6 +1,7 @@
 'use client'
 
-import { motion, HTMLMotionProps } from 'framer-motion'
+import dynamic from 'next/dynamic'
+import { HTMLMotionProps } from 'framer-motion'
 
 type BaseMotionProps = {
   children: React.ReactNode
@@ -10,14 +11,36 @@ type MotionDivProps = BaseMotionProps & Omit<HTMLMotionProps<'div'>, 'children'>
 type MotionH1Props = BaseMotionProps & Omit<HTMLMotionProps<'h1'>, 'children'>
 type MotionPProps = BaseMotionProps & Omit<HTMLMotionProps<'p'>, 'children'>
 
-export function MotionDiv({ children, ...props }: MotionDivProps) {
-  return <motion.div {...props}>{children}</motion.div>
-}
+const MotionDivBase = dynamic(
+  () => import('framer-motion').then((mod) => {
+    const { motion } = mod
+    return ({ children, ...props }: MotionDivProps) => (
+      <motion.div {...props}>{children}</motion.div>
+    )
+  }),
+  { ssr: true }
+)
 
-export function MotionH1({ children, ...props }: MotionH1Props) {
-  return <motion.h1 {...props}>{children}</motion.h1>
-}
+const MotionH1Base = dynamic(
+  () => import('framer-motion').then((mod) => {
+    const { motion } = mod
+    return ({ children, ...props }: MotionH1Props) => (
+      <motion.h1 {...props}>{children}</motion.h1>
+    )
+  }),
+  { ssr: true }
+)
 
-export function MotionP({ children, ...props }: MotionPProps) {
-  return <motion.p {...props}>{children}</motion.p>
-}
+const MotionPBase = dynamic(
+  () => import('framer-motion').then((mod) => {
+    const { motion } = mod
+    return ({ children, ...props }: MotionPProps) => (
+      <motion.p {...props}>{children}</motion.p>
+    )
+  }),
+  { ssr: true }
+)
+
+export const MotionDiv = MotionDivBase
+export const MotionH1 = MotionH1Base
+export const MotionP = MotionPBase

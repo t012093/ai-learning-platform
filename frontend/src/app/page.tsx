@@ -1,46 +1,74 @@
 'use client'
 
-import { MotionDiv, MotionH1, MotionP } from '@/components/animations/MotionDiv'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import {
-  BeakerIcon,
-  UserGroupIcon,
-  AcademicCapIcon,
-  SparklesIcon,
-  RocketLaunchIcon,
-  ChartBarIcon,
-} from '@heroicons/react/24/outline'
+import { ComponentType } from 'react'
 
-const features = [
+const { MotionDiv, MotionH1, MotionP } = {
+  MotionDiv: dynamic(() => import('@/components/animations/MotionDiv').then(mod => mod.MotionDiv)),
+  MotionH1: dynamic(() => import('@/components/animations/MotionDiv').then(mod => mod.MotionH1)),
+  MotionP: dynamic(() => import('@/components/animations/MotionDiv').then(mod => mod.MotionP))
+}
+
+// アイコンを個別に動的インポート
+const IconComponents = {
+  SparklesIcon: dynamic(() => 
+    import('@heroicons/react/24/outline').then((mod) => mod.SparklesIcon)
+  ),
+  UserGroupIcon: dynamic(() => 
+    import('@heroicons/react/24/outline').then((mod) => mod.UserGroupIcon)
+  ),
+  ChartBarIcon: dynamic(() => 
+    import('@heroicons/react/24/outline').then((mod) => mod.ChartBarIcon)
+  ),
+  AcademicCapIcon: dynamic(() => 
+    import('@heroicons/react/24/outline').then((mod) => mod.AcademicCapIcon)
+  ),
+  BeakerIcon: dynamic(() => 
+    import('@heroicons/react/24/outline').then((mod) => mod.BeakerIcon)
+  ),
+  RocketLaunchIcon: dynamic(() => 
+    import('@heroicons/react/24/outline').then((mod) => mod.RocketLaunchIcon)
+  )
+}
+
+interface Feature {
+  name: string
+  description: string
+  icon: ComponentType<React.ComponentProps<'svg'>>
+}
+
+// feature dataの分離
+const features: Feature[] = [
   {
     name: 'AIによるパーソナライズ学習',
     description: 'あなたの学習スタイルを分析し、最適な学習プランを提案します。',
-    icon: SparklesIcon,
+    icon: IconComponents.SparklesIcon,
   },
   {
     name: 'コミュニティとの連携',
     description: '同じ目標を持つ仲間と繋がり、モチベーションを高めます。',
-    icon: UserGroupIcon,
+    icon: IconComponents.UserGroupIcon,
   },
   {
     name: '進捗の可視化',
     description: '学習の進捗をグラフやチャートで分かりやすく表示します。',
-    icon: ChartBarIcon,
+    icon: IconComponents.ChartBarIcon,
   },
   {
     name: 'カスタマイズ可能なカリキュラム',
     description: 'あなたのペースとニーズに合わせてカリキュラムを調整できます。',
-    icon: AcademicCapIcon,
+    icon: IconComponents.AcademicCapIcon,
   },
   {
     name: 'リアルタイムフィードバック',
     description: 'AIが学習状況を分析し、改善点を提案します。',
-    icon: BeakerIcon,
+    icon: IconComponents.BeakerIcon,
   },
   {
     name: '目標達成のサポート',
     description: '明確な目標設定と達成までのロードマップを提供します。',
-    icon: RocketLaunchIcon,
+    icon: IconComponents.RocketLaunchIcon,
   },
 ]
 
