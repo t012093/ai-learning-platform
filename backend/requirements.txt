@@ -1,0 +1,47 @@
+# 基本依存関係
+pydantic>=2.6.0,<2.10.0
+pydantic-settings>=2.1.0
+python-dotenv>=1.0.0
+
+# MCPサーバー関連
+modelcontextprotocol==0.1.0
+airtrain>=0.1.58
+fastapi>=0.104.1
+uvicorn>=0.24.0
+
+# OpenAI
+openai>=1.3.5
+
+# データベース
+sqlalchemy>=2.0.23
+alembic>=1.12.1
+aiosqlite>=0.19.0
+
+# 非同期処理
+asyncio>=3.4.3
+aiohttp>=3.9.1
+
+# テスト関連
+pytest>=7.4.3
+pytest-asyncio>=0.21.1
+pytest-cov>=6.0.0
+pytest-mock>=3.14.0
+httpx>=0.25.2
+
+# セキュリティ
+safety>=3.3.1
+safety-schemas>=0.0.11
+bandit>=1.7.5
+
+# 型チェックとリンター
+mypy>=1.7.1
+types-aiofiles>=23.2.0.0
+types-python-dateutil>=2.8.19.14
+black>=23.11.0
+isort>=5.12.0
+flake8>=6.1.0
+
+# その他の依存関係
+rich>=12.0.0
+typer>=0.7.0
+requests>=2.25.0

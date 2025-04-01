@@ -1,0 +1,36 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E203
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    venv,
+    .venv,
+    .env,
+    .pytest_cache,
+    htmlcov
+
+per-file-ignores =
+    # Allow unused imports in __init__.py files
+    __init__.py: F401
+    # Allow longer lines in test files
+    tests/*: E501
+
+# McCabe complexity checker
+max-complexity = 10
+
+# Docstring checking
+docstring-convention = google
+
+# Import order
+import-order-style = pep8
+
+# Additional plugins
+require-plugins =
+    flake8-docstrings
+    flake8-import-order
+    flake8-bugbear
+    flake8-comprehensions
+    flake8-return

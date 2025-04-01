@@ -1,0 +1,151 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_ai_learning
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio pytest-cov pytest-mock httpx
+
+    - name: Run tests with coverage
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_ai_learning
+        TEST_MODE: true
+        DEBUG_MODE: true
+      run: |
+        cd backend
+        pytest --cov=mcp_server --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        file: ./backend/coverage.xml
+        fail_ci_if_error: true
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install linting tools
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install flake8 black mypy
+
+    - name: Run linters
+      run: |
+        cd backend
+        flake8 mcp_server
+        black --check mcp_server
+        mypy mcp_server
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install security tools
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install bandit safety
+
+    - name: Run security checks
+      run: |
+        cd backend
+        bandit -r mcp_server
+        safety check
+
+  docker:
+    runs-on: ubuntu-latest
+
+    needs: [test, lint, security]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build Docker image
+      run: |
+        docker build -t ai-learning-backend ./backend
+        docker build -t ai-learning-frontend ./frontend
+
+    - name: Test Docker images
+      run: |
+        docker-compose -f docker-compose.yml up -d
+        sleep 10
+        curl -f http://localhost:3001/health || exit 1
+        curl -f http://localhost:3000 || exit 1
+        docker-compose down
+
+    - name: Login to Docker Hub
+      if: github.ref == 'refs/heads/main'
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Push Docker images
+      if: github.ref == 'refs/heads/main'
+      run: |
+        docker tag ai-learning-backend ${{ secrets.DOCKER_USERNAME }}/ai-learning-backend:latest
+        docker tag ai-learning-frontend ${{ secrets.DOCKER_USERNAME }}/ai-learning-frontend:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/ai-learning-backend:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/ai-learning-frontend:latest
